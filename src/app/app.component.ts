@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { environment } from './../environments/environment';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 
 @Component({
@@ -7,8 +8,9 @@ import { HttpHeaders, HttpClient } from '@angular/common/http';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = '';
-  uid = 2;
+  title = environment.title;
+  uid = environment.apiUid;
+  url = environment.apiUrl;
   uname = '';
   uphone = '';
   uemail = '';
@@ -21,7 +23,7 @@ export class AppComponent {
   db = [];
   constructor(private http: HttpClient) {}
   ngOnInit(): void {
-    this.http.get('api/db/'+this.uid).subscribe(data => {
+    this.http.get(this.url+'api/db/'+this.uid).subscribe(data => {
       this.loading = false;
       this.db = Object.values(data);
       this.db.forEach(function(v, i, arr) {
@@ -64,7 +66,7 @@ export class AppComponent {
     };
     let headers = new HttpHeaders();
     headers = headers.append('Content-Type', 'application/json; charset=utf-8');
-    this.http.post('api/order', JSON.stringify(o), {
+    this.http.post(this.url+'api/order', JSON.stringify(o), {
       headers: headers
     }).subscribe(data => { this.state = 3; });
   }
