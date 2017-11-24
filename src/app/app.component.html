@@ -1,20 +1,81 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{title}}!
-  </h1>
-  <img width="300" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-</div>
-<h2>Here are some links to help you start: </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://github.com/angular/angular-cli/wiki">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul>
-
+<mat-toolbar color="primary" class="mat-elevation-z8">
+  {{title}}
+  <span class="fill-space"></span>
+  <button mat-button (click)="showInfo = !showInfo;">
+    Как делать заказ
+    <mat-icon>info</mat-icon>
+  </button>
+</mat-toolbar>
+<main flex style="padding-bottom:100px">
+  <mat-card *ngIf="showInfo">
+    <ul>
+      <li>
+        Вы можете делать заказ книг как пачками, так и по-штучно.<br>
+        Также вы можете использовать и то и другое поле.<br>
+        Например, вы заказываете 2 пачки по 8 книг плюс 4 книги штучно &mdash; всего получается 20.
+      </li>
+      <li>
+        Минимальный заказ &mdash; на 3000 рублей. Когда набирается эта сумма, кнопка "Оформить" активизируется.
+      </li>
+      <li>
+        При оформлении обязательно заполните поля Имя, Телефон и e-mail. Мы с Вами свяжемся в близжайшие сроки.
+      </li>
+    </ul>
+  </mat-card>
+  <mat-progress-bar mode="indeterminate" color="accent" *ngIf="loading || state == 2"></mat-progress-bar>
+  <mat-card *ngIf="state == 3" class="centered" fxLayout="column">
+    <p>Спасибо! Ваши заказ успешно отправлен, мы с вами свяжемся в близжайшее время.</p>
+  </mat-card>
+  <mat-card *ngIf="state == 1" class="centered" fxLayout="column">
+    <p>Для оформления заказа заполните контактную информацию.</p>
+    <mat-form-field>
+      <input matInput placeholder="Имя" (input)="uname=$event.target.value" [disabled]="state == 2">
+      <mat-hint>Обязательное поле</mat-hint>
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput placeholder="Телефон" (input)="uphone=$event.target.value" [disabled]="state == 2">
+      <mat-hint>Обязательное поле</mat-hint>
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput placeholder="e-mail" (input)="uemail=$event.target.value" [disabled]="state == 2">
+      <mat-hint>Обязательное поле</mat-hint>
+    </mat-form-field>
+    <mat-form-field>
+      <textarea matInput placeholder="Доп. информация" (input)="udescr=$event.target.value" [disabled]="state == 2" matTextareaAutosize matAutosizeMinRows="2"></textarea>
+      <mat-hint>Адрес для доставки и др. информация</mat-hint>
+    </mat-form-field>
+  </mat-card>
+  <mat-tab-group *ngIf="!state">
+    <mat-tab label="{{bookgroup.name}}" *ngFor="let bookgroup of db">
+      <mat-card *ngFor="let book of bookgroup.books">
+        <mat-card-title>{{book.name}}</mat-card-title>
+        <mat-card-content>
+          <mat-form-field style="width:18%" [hintLabel]="(book.pack < 2)?'':('x'+book.pack)">
+            <input matInput [disabled]="(book.pack < 2) || (state != 0)" [value]="book.box" (input)="book.box=$event.target.value;RecountTotal();" [placeholder]="(book.pack < 2)?'':'Пачками'" type="number">
+          </mat-form-field>
+          <mat-form-field style="width:18%">
+            <input matInput [disabled]="state != 0" [value]="book.byone" (input)="book.byone=$event.target.value;RecountTotal();" placeholder="Штучно" type="number">
+          </mat-form-field>
+          <mat-form-field style="width:18%">
+            <input matInput placeholder="Итого книг" disabled value="{{((book.box * book.pack) + (book.byone * 1))}}">
+          </mat-form-field>
+          <mat-form-field style="width:18%">
+            <input matInput placeholder="Цена" disabled value="{{book.price}}">
+          </mat-form-field>
+          <mat-form-field style="width:18%">
+            <input matInput placeholder="Стоимость" disabled value="{{((book.box * book.pack) + (book.byone * 1)) * book.price}}">
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+  </mat-tab-group>
+</main>
+<footer>
+<mat-toolbar color="primary" class="ft">
+    <div class="fill-space">
+      <div class="fttext">{{totalBooks}} книг на {{totalPrice}} р.</div>
+    </div>
+    <button *ngIf="!state" mat-raised-button color="accent" [disabled]="totalPrice < 3000" (click)="state = 1;">Оформить<mat-icon>arrow_forward</mat-icon></button>
+    <button *ngIf="state" mat-raised-button color="accent" [disabled]="uname == '' || uphone == '' || uemail == '' || state == 2" (click)="Order()">Отправить <mat-icon>send</mat-icon></button>
+</mat-toolbar>
+</footer>
